@@ -1,163 +1,86 @@
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
-public class Platformer extends GameEngine{
+public class Platformer extends GameEngine {
+    private static final int WORLD_WIDTH = 2000;  // Width of the game world
+    private GameWorld gameWorld;
+    private Player player;
+    private Image[] coinSprites;
+
+    public static final int WINDOW_WIDTH = 800;
+    public static final int WINDOW_HEIGHT = 600;
 
     public static void main(String[] args) {
-        createGame(new Platformer(),60);
+        createGame(new Platformer(), 60);
     }
 
-    private boolean left, right, jump;
-    Image spritesheet;
+    public Platformer() {
+        super(WINDOW_WIDTH, WINDOW_HEIGHT);
+    }
 
+    @Override
     public void init() {
+        Image playerSpriteSheet = loadImage("./resource/AnimationSheet_Character.png");
+        Image coinSheet = loadImage("./resource/Coin_Silver-Sheet.png");
 
-        setWindowSize(800, 600);
-        spritesheet = loadImage("resource/AnimationSheet_Character.png");
-
-        // Setup booleans
-        left  = false;
-        right = false;
-        jump = false;
-
-        //initialise player
-        initPlayer();
-    }
-
-    //player variables
-    double playerPositionX;
-    double playerPositionY;
-    double playerSpeed;
-    Image[] playerSpriteIdle = new Image[2];
-    Image[] playerSpriteWalking = new Image[8];
-    double playerFrameTimer;
-
-    public void initPlayer() {
-        //load images for player into arrays
+        Image[] playerIdleSprites = new Image[2];
+        Image[] playerWalkingSprites = new Image[8];
         for (int i = 0; i < 8; i++) {
-            playerSpriteWalking[i] = subImage(spritesheet, i*32,96, 32, 32);
+            playerWalkingSprites[i] = subImage(playerSpriteSheet, i * 32, 96, 32, 32);
         }
         for (int i = 0; i < 2; i++) {
-            playerSpriteIdle[i] = subImage(spritesheet, i * 32, 0, 32, 32);
+            playerIdleSprites[i] = subImage(playerSpriteSheet, i * 32, 0, 32, 32);
         }
 
-        //starting point for player
-        playerPositionX = 250;
-        playerPositionY = 250;
+        player = new Player(playerIdleSprites, playerWalkingSprites);
 
-        //controls how fast player moves
-        playerSpeed = 200;
+        coinSprites = new Image[10];
+        int coinSheetWidth = coinSheet.getWidth(null);
+        int coinSheetHeight = coinSheet.getHeight(null);
+        int coinIndex = 0;
 
-        //frame timer for which frame is displayed
-        playerFrameTimer = 0;
+        for (int y = 0; y < coinSheetHeight; y += 32) {
+            for (int x = 0; x < coinSheetWidth; x += 32) {
+                if (coinIndex < 10) {
+                    coinSprites[coinIndex] = subImage(coinSheet, x, y, 32, 32);
+                    if (coinSprites[coinIndex] == null) {
+                        System.out.println("Error: coin image " + coinIndex + " is null.");
+                    } else {
+                        System.out.println("Coin frame " + coinIndex + " loaded successfully.");
+                    }
+                    coinIndex++;
+                }
+            }
+        }
+
+        gameWorld = new GameWorld(player, coinSprites);
     }
 
     @Override
     public void update(double dt) {
-        updatePlayer(dt);
-    }
-
-    public void updatePlayer(double dt) {
-        //updating frame timer for player
-        playerFrameTimer +=dt;
-
-        //player movement
-        if (left) {
-            playerPositionX -= playerSpeed*dt;
-        }
-        if (right) {
-            playerPositionX += playerSpeed*dt;
-        }
-
-        if (jump) {
-            //unsure how to implement yet
-        }
-
+        gameWorld.update(dt);
     }
 
     @Override
     public void paintComponent() {
-        //draw background, to be replaced with asset later
-        changeBackgroundColor(white);
-        clearBackground(width(),height());
-
-        //draw temporary ground
-        changeColor(green);
-        drawSolidRectangle(0, 314, 800, 600);
-
-        //draws the player
-        drawPlayer();
+        gameWorld.draw(mGraphics);
     }
 
-    //draws the player
-    public void drawPlayer() {
-        int i;
-
-        //may be better to replace if statements with switch if we are going to be adding many more player states
-
-        //walking animation when moving left
-        if (left) {
-            i = getAnimationFrame(playerFrameTimer, 1, 8);
-            //drawing image with negative width flips it horozontally
-            drawImage(playerSpriteWalking[i], playerPositionX+64,  playerPositionY, -64, 64);
-        }
-        //walking animation when moving right
-        else if (right) {
-            i = getAnimationFrame(playerFrameTimer, 1, 8);
-            drawImage(playerSpriteWalking[i], playerPositionX,  playerPositionY, 64, 64);
-        }
-        //idle
-        else {
-            //currently idle will always face right, can add int/bool to track direction of last direction faced and draw image to match
-            i = getAnimationFrame(playerFrameTimer, 1, 2);
-            drawImage(playerSpriteIdle[i], playerPositionX, playerPositionY, 64, 64);
-        }
-    }
-    //this method is used to calculate the frame to display independent of the frame rate
-    public int getAnimationFrame(double timer, double duration, int numFrames) {
-        // Get frame
-        int i = floor(((timer % duration) / duration) * numFrames);
-        // Check range
-        if(i >= numFrames) {
-            i = numFrames-1;
-        }
-        // Return
-        return i;
-    }
-
-
-    // KeyPressed for Game
+    @Override
     public void keyPressed(KeyEvent e) {
-
-        // The user pressed left arrow
-        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            left = true;
-        }
-        // The user pressed right arrow
-        if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            right = true;
-        }
-        // The user pressed space
-        if(e.getKeyCode() == KeyEvent.VK_SPACE) {
-            jump = true;
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_LEFT -> player.setLeft(true);
+            case KeyEvent.VK_RIGHT -> player.setRight(true);
+            case KeyEvent.VK_SPACE -> player.setJump(true);
         }
     }
 
+    @Override
     public void keyReleased(KeyEvent e) {
-        // The user released left arrow
-        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            // Record it
-            left = false;
-        }
-        // The user released right arrow
-        if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            // Record it
-            right = false;
-        }
-        // The user released space
-        if(e.getKeyCode() == KeyEvent.VK_SPACE) {
-            jump = false;
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_LEFT -> player.setLeft(false);
+            case KeyEvent.VK_RIGHT -> player.setRight(false);
+            case KeyEvent.VK_SPACE -> player.setJump(false);
         }
     }
 }
-
