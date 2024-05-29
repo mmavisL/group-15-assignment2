@@ -6,6 +6,7 @@ public class Player {
     private final Image[] idleSprites;
     private final Image[] walkingSprites;
     private double frameTimer;
+    private final GameEngine.AudioClip jumpSound;
 
     public Player(Image[] idleSprites, Image[] walkingSprites) {
         this.idleSprites = idleSprites;
@@ -15,6 +16,7 @@ public class Player {
         speed = 200;
         velocityY = 0;
         onGround = true;
+        jumpSound = GameEngine.loadAudio("./resource/jump.wav");
     }
 
     public void setLeft(boolean left) {
@@ -41,6 +43,7 @@ public class Player {
         if (jump && onGround) {
             velocityY = -500;
             onGround = false;
+            GameEngine.playAudio(jumpSound);
         }
         y += velocityY * dt;
         if (y >= GameConfig.GROUND_LEVEL - GameConfig.SPRITE_SIZE) {

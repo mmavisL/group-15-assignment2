@@ -3,8 +3,14 @@ import java.awt.event.KeyEvent;
 
 public class Platformer extends GameEngine {
     private GameWorld gameWorld;
+    private Menu menu;
     private Player player;
     private Image[] coinSprites;
+    private AudioClip bgm;
+    int menuOption;
+
+    private enum GameState {Menu, Play}
+    GameState gamestate = GameState.Menu;
 
     public static void main(String[] args) {
         createGame(new Platformer(), 60);
@@ -50,17 +56,32 @@ public class Platformer extends GameEngine {
             }
         }
 
+        //consider moving to gameworld and having seperate menu music
+        bgm = loadAudio("./resource/bgm.wav");
+        startAudioLoop(bgm);
+
+        menu = new Menu(background);
+        menuOption = 0;
+
         gameWorld = new GameWorld(player, coinSprites, background);
     }
 
     @Override
     public void update(double dt) {
-        gameWorld.update(dt);
+        if(gamestate == GameState.Play) {
+            gameWorld.update(dt);
+        } else if (gamestate == GameState.Menu) {
+            menu.update(menuOption);
+        }
     }
 
     @Override
     public void paintComponent() {
-        gameWorld.draw(mGraphics);
+        if (gamestate == GameState.Menu) {
+            menu.draw(mGraphics);
+        } else {
+            gameWorld.draw(mGraphics);
+        }
     }
 
     @Override
@@ -74,10 +95,33 @@ public class Platformer extends GameEngine {
 
     @Override
     public void keyReleased(KeyEvent e) {
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_LEFT -> player.setLeft(false);
-            case KeyEvent.VK_RIGHT -> player.setRight(false);
-            case KeyEvent.VK_SPACE -> player.setJump(false);
+        if (gamestate == GameState.Menu) {
+            if (e.getKeyCode() == KeyEvent.VK_UP) {
+                if(menuOption > 0) {
+                    menuOption--;
+                }
+            }
+            if(e.getKeyCode() == KeyEvent.VK_DOWN) {
+                if(menuOption < 2) {
+                    menuOption++;
+                }
+            }
+            if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+                if (menuOption == 0) {
+                    gamestate = GameState.Play;
+                } else if (menuOption == 1) {
+                    //display instructions, to be written
+                } else if (menuOption == 2) {
+                    System.exit(0);
+                }
+            }
+        }
+        else if (gamestate == GameState.Play) {
+            switch (e.getKeyCode()) {
+                case KeyEvent.VK_LEFT -> player.setLeft(false);
+                case KeyEvent.VK_RIGHT -> player.setRight(false);
+                case KeyEvent.VK_SPACE -> player.setJump(false);
+            }
         }
     }
 }

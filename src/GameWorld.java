@@ -12,6 +12,7 @@ public class GameWorld {
     private double worldOffsetX;
     private final Map<Integer, Integer> segmentCoinCount;
     private final Image background;
+    private final GameEngine.AudioClip collectCoin;
 
     public GameWorld(Player player, Image[] coinSprites, Image background) {
         this.player = player;
@@ -23,6 +24,8 @@ public class GameWorld {
         this.segmentCoinCount = new HashMap<>();
 
         generateInitialCoins();
+
+        collectCoin = GameEngine.loadAudio("./resource/collectcoin.wav");
     }
 
     public void update(double dt) {
@@ -93,6 +96,7 @@ public class GameWorld {
         for (int i = 0; i < coins.size(); i++) {
             Coin coin = coins.get(i);
             if (playerBounds.intersects(coin.getBounds(worldOffsetX))) {
+                GameEngine.playAudio(collectCoin);
                 coins.remove(i);
                 score++;
                 i--;
