@@ -7,7 +7,6 @@ public class Player {
     private final Image[] walkingSprites;
     private double frameTimer;
 
-
     public Player(Image[] idleSprites, Image[] walkingSprites) {
         this.idleSprites = idleSprites;
         this.walkingSprites = walkingSprites;

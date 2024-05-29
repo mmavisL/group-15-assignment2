@@ -11,10 +11,12 @@ public class GameWorld {
     private int score;
     private double worldOffsetX;
     private final Map<Integer, Integer> segmentCoinCount;
+    private final Image background;
 
-    public GameWorld(Player player, Image[] coinSprites) {
+    public GameWorld(Player player, Image[] coinSprites, Image background) {
         this.player = player;
         this.coinSprites = coinSprites;
+        this.background = background;
         this.coins = new ArrayList<>();
         this.score = 0;
         this.worldOffsetX = 0;
@@ -34,12 +36,9 @@ public class GameWorld {
 
     public void draw(Graphics2D g) {
         // Draw background
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, Platformer.WINDOW_WIDTH, Platformer.WINDOW_HEIGHT);
-
-        // Draw ground
-        g.setColor(Color.GREEN);
-        g.fillRect(0, GameConfig.GROUND_LEVEL, Platformer.WINDOW_WIDTH, 100);
+        for (int i = 0; i < GameConfig.WORLD_WIDTH / GameConfig.WINDOW_WIDTH + 1; i++) {
+            g.drawImage(background, i * GameConfig.WINDOW_WIDTH - (int) worldOffsetX, 0, GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT, null);
+        }
 
         // Draw player
         player.draw(g, worldOffsetX);
@@ -51,9 +50,9 @@ public class GameWorld {
 
         // Draw score
         g.setColor(Color.BLACK);
-        g.setFont(new Font("Arial", Font.BOLD, 20));
-        g.drawString("Score: " + score, 650, 50);
-        g.drawImage(coinSprites[0], 620, 30, 32, 32, null);
+        g.setFont(new Font("Arial", Font.BOLD, 32));
+        g.drawString("Score: " + score, 550, 50);
+        g.drawImage(coinSprites[0], 515, 22, 32, 32, null);
     }
 
     private void generateInitialCoins() {
@@ -103,8 +102,8 @@ public class GameWorld {
 
     private void updateWorldOffset() {
         double playerScreenX = player.getX() - worldOffsetX;
-        if (playerScreenX > Platformer.WINDOW_WIDTH / 2) {
-            worldOffsetX = player.getX() - Platformer.WINDOW_WIDTH / 2;
+        if (playerScreenX > GameConfig.WINDOW_WIDTH / 2) {
+            worldOffsetX = player.getX() - GameConfig.WINDOW_WIDTH / 2;
         }
     }
 

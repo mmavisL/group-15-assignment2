@@ -2,26 +2,23 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 
 public class Platformer extends GameEngine {
-    private static final int WORLD_WIDTH = 2000;  // Width of the game world
     private GameWorld gameWorld;
     private Player player;
     private Image[] coinSprites;
-
-    public static final int WINDOW_WIDTH = 800;
-    public static final int WINDOW_HEIGHT = 600;
 
     public static void main(String[] args) {
         createGame(new Platformer(), 60);
     }
 
     public Platformer() {
-        super(WINDOW_WIDTH, WINDOW_HEIGHT);
+        super(GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT);
     }
 
     @Override
     public void init() {
         Image playerSpriteSheet = loadImage("./resource/AnimationSheet_Character.png");
         Image coinSheet = loadImage("./resource/Coin_Silver-Sheet.png");
+        Image background = loadImage("./resource/Background.png");
 
         Image[] playerIdleSprites = new Image[2];
         Image[] playerWalkingSprites = new Image[8];
@@ -53,7 +50,7 @@ public class Platformer extends GameEngine {
             }
         }
 
-        gameWorld = new GameWorld(player, coinSprites);
+        gameWorld = new GameWorld(player, coinSprites, background);
     }
 
     @Override
