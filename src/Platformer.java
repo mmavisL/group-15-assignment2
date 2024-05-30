@@ -5,6 +5,7 @@ public class Platformer extends GameEngine {
     private GameWorld gameWorld;
     private Player player;
     private Image[] coinSprites;
+    private Image mushroomSprite;
 
     public static void main(String[] args) {
         createGame(new Platformer(), 60);
@@ -18,6 +19,7 @@ public class Platformer extends GameEngine {
     public void init() {
         Image playerSpriteSheet = loadImage("./resource/AnimationSheet_Character.png");
         Image coinSheet = loadImage("./resource/Coin_Silver-Sheet.png");
+        mushroomSprite = loadImage("./resource/Mushroom.png");
         Image background = loadImage("./resource/Background.png");
 
         Image[] playerIdleSprites = new Image[2];
@@ -50,7 +52,7 @@ public class Platformer extends GameEngine {
             }
         }
 
-        gameWorld = new GameWorld(player, coinSprites, background);
+        gameWorld = new GameWorld(player, coinSprites, mushroomSprite, background);
     }
 
     @Override

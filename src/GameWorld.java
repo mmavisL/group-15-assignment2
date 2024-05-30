@@ -7,22 +7,29 @@ import java.util.Random;
 public class GameWorld {
     private final Player player;
     private final ArrayList<Coin> coins;
+    private final ArrayList<Mushroom> mushrooms;
     private final Image[] coinSprites;
+    private final Image mushroomSprite;
     private int score;
     private double worldOffsetX;
     private final Map<Integer, Integer> segmentCoinCount;
+    private final Map<Integer, Integer> segmentMushroomCount;
     private final Image background;
 
-    public GameWorld(Player player, Image[] coinSprites, Image background) {
+    public GameWorld(Player player, Image[] coinSprites, Image mushroomSprite, Image background) {
         this.player = player;
         this.coinSprites = coinSprites;
+        this.mushroomSprite = mushroomSprite;
         this.background = background;
         this.coins = new ArrayList<>();
+        this.mushrooms = new ArrayList<>();
         this.score = 0;
         this.worldOffsetX = 0;
         this.segmentCoinCount = new HashMap<>();
+        this.segmentMushroomCount = new HashMap<>();
 
         generateInitialCoins();
+        generateInitialMushrooms();
     }
 
     public void update(double dt) {
@@ -30,7 +37,7 @@ public class GameWorld {
         for (Coin coin : coins) {
             coin.update(dt);
         }
-        checkCoinCollisions();
+        checkCollisions();
         updateWorldOffset();
     }
 
@@ -46,6 +53,11 @@ public class GameWorld {
         // Draw coins
         for (Coin coin : coins) {
             coin.draw(g, worldOffsetX);
+        }
+
+        // Draw mushrooms
+        for (Mushroom mushroom : mushrooms) {
+            mushroom.draw(g, worldOffsetX);
         }
 
         // Draw score
@@ -88,13 +100,64 @@ public class GameWorld {
         }
     }
 
-    private void checkCoinCollisions() {
+    private void generateInitialMushrooms() {
+        Random rand = new Random();
+        for (int i = 0; i < GameConfig.MUSHROOMS_TOTAL; i++) {
+            double x, y;
+            boolean overlaps;
+            do {
+                int segment = rand.nextInt(GameConfig.WORLD_WIDTH / GameConfig.SEGMENT_WIDTH);
+                x = segment * GameConfig.SEGMENT_WIDTH + rand.nextInt(GameConfig.SEGMENT_WIDTH - Mushroom.SIZE);
+                y = GameConfig.GROUND_LEVEL - Mushroom.SIZE - rand.nextInt(GameConfig.JUMP_HEIGHT);
+                overlaps = false;
+
+                // Check if the segment has reached the max mushroom limit
+                if (segmentMushroomCount.getOrDefault(segment, 0) >= GameConfig.MAX_MUSHROOMS_PER_SEGMENT) {
+                    overlaps = true;
+                    continue;
+                }
+
+                // Check for overlaps with existing mushrooms
+                for (Mushroom mushroom : mushrooms) {
+                    if (mushroom.getBounds(0).intersects(new Rectangle((int) x, (int) y, Mushroom.SIZE, Mushroom.SIZE))) {
+                        overlaps = true;
+                        break;
+                    }
+                }
+
+                // Check for overlaps with existing coins
+                for (Coin coin : coins) {
+                    if (coin.getBounds(0).intersects(new Rectangle((int) x, (int) y, Mushroom.SIZE, Mushroom.SIZE))) {
+                        overlaps = true;
+                        break;
+                    }
+                }
+
+                if (!overlaps) {
+                    segmentMushroomCount.put(segment, segmentMushroomCount.getOrDefault(segment, 0) + 1);
+                }
+            } while (overlaps);
+            mushrooms.add(new Mushroom(x, y, mushroomSprite));
+        }
+    }
+
+    private void checkCollisions() {
         Rectangle playerBounds = player.getBounds(worldOffsetX);
+        // Check coin collisions
         for (int i = 0; i < coins.size(); i++) {
             Coin coin = coins.get(i);
             if (playerBounds.intersects(coin.getBounds(worldOffsetX))) {
                 coins.remove(i);
                 score++;
+                i--;
+            }
+        }
+        // Check mushroom collisions
+        for (int i = 0; i < mushrooms.size(); i++) {
+            Mushroom mushroom = mushrooms.get(i);
+            if (playerBounds.intersects(mushroom.getBounds(worldOffsetX))) {
+                mushrooms.remove(i);
+                score--;
                 i--;
             }
         }
@@ -109,5 +172,9 @@ public class GameWorld {
 
     public int getScore() {
         return score;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 }
