@@ -6,6 +6,10 @@ public class Platformer extends GameEngine {
     private Player player;
     private Image[] coinSprites;
     private Image mushroomSprite;
+    private AudioClip bgm;  // Background music
+    private AudioClip jumpSound;  // Jump sound effect
+    private AudioClip collectCoinSound;  // Coin collection sound effect
+    private AudioClip hurtSound;  // Mushroom collection (hurt) sound effect
 
     public static void main(String[] args) {
         createGame(new Platformer(), 60);
@@ -52,7 +56,20 @@ public class Platformer extends GameEngine {
             }
         }
 
-        gameWorld = new GameWorld(player, coinSprites, mushroomSprite, background);
+        gameWorld = new GameWorld(this, player, coinSprites, mushroomSprite, background);
+
+        // Load and play background music
+        bgm = loadAudio("./resource/sounds/bgm.wav");
+        startAudioLoop(bgm);
+
+        // Load jump sound effect
+        jumpSound = loadAudio("./resource/sounds/Jump.wav");
+
+        // Load coin collection sound effect
+        collectCoinSound = loadAudio("./resource/sounds/collectcoin.wav");
+
+        // Load hurt sound effect (mushroom collection)
+        hurtSound = loadAudio("./resource/sounds/hurt.wav");
     }
 
     @Override
@@ -70,7 +87,10 @@ public class Platformer extends GameEngine {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_LEFT -> player.setLeft(true);
             case KeyEvent.VK_RIGHT -> player.setRight(true);
-            case KeyEvent.VK_SPACE -> player.setJump(true);
+            case KeyEvent.VK_SPACE -> {
+                player.setJump(true);
+                playAudio(jumpSound);  // Play jump sound effect
+            }
         }
     }
 
@@ -81,5 +101,13 @@ public class Platformer extends GameEngine {
             case KeyEvent.VK_RIGHT -> player.setRight(false);
             case KeyEvent.VK_SPACE -> player.setJump(false);
         }
+    }
+
+    public void playCollectCoinSound() {
+        playAudio(collectCoinSound);  // Play coin collection sound effect
+    }
+
+    public void playHurtSound() {
+        playAudio(hurtSound);  // Play hurt sound effect
     }
 }

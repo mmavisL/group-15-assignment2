@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Random;
 
 public class GameWorld {
+    private final Platformer platformer;
     private final Player player;
     private final ArrayList<Coin> coins;
     private final ArrayList<Mushroom> mushrooms;
@@ -16,7 +17,8 @@ public class GameWorld {
     private final Map<Integer, Integer> segmentMushroomCount;
     private final Image background;
 
-    public GameWorld(Player player, Image[] coinSprites, Image mushroomSprite, Image background) {
+    public GameWorld(Platformer platformer, Player player, Image[] coinSprites, Image mushroomSprite, Image background) {
+        this.platformer = platformer;
         this.player = player;
         this.coinSprites = coinSprites;
         this.mushroomSprite = mushroomSprite;
@@ -37,6 +39,7 @@ public class GameWorld {
         for (Coin coin : coins) {
             coin.update(dt);
         }
+        // No need to update mushrooms as they have no animation
         checkCollisions();
         updateWorldOffset();
     }
@@ -149,6 +152,7 @@ public class GameWorld {
             if (playerBounds.intersects(coin.getBounds(worldOffsetX))) {
                 coins.remove(i);
                 score++;
+                platformer.playCollectCoinSound();  // Play coin collection sound effect
                 i--;
             }
         }
@@ -158,6 +162,7 @@ public class GameWorld {
             if (playerBounds.intersects(mushroom.getBounds(worldOffsetX))) {
                 mushrooms.remove(i);
                 score--;
+                platformer.playHurtSound();  // Play hurt sound effect
                 i--;
             }
         }
@@ -177,4 +182,5 @@ public class GameWorld {
     public Player getPlayer() {
         return player;
     }
+
 }
