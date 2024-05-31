@@ -35,11 +35,15 @@ public class GameWorld {
     }
 
     public void update(double dt) {
+        if (score >= GameConfig.WINNING_SCORE) {
+            platformer.showWinningScreen();
+            return;
+        }
+
         player.update(dt);
         for (Coin coin : coins) {
             coin.update(dt);
         }
-        // No need to update mushrooms as they have no animation
         checkCollisions();
         updateWorldOffset();
     }
@@ -182,5 +186,4 @@ public class GameWorld {
     public Player getPlayer() {
         return player;
     }
-
 }
