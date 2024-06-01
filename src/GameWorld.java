@@ -16,8 +16,9 @@ public class GameWorld {
     private final Map<Integer, Integer> segmentCoinCount;
     private final Map<Integer, Integer> segmentMushroomCount;
     private final Image background;
+    Font font;
 
-    public GameWorld(Platformer platformer, Player player, Image[] coinSprites, Image mushroomSprite, Image background) {
+    public GameWorld(Platformer platformer, Player player, Image[] coinSprites, Image mushroomSprite, Image background, Font font) {
         this.platformer = platformer;
         this.player = player;
         this.coinSprites = coinSprites;
@@ -29,7 +30,7 @@ public class GameWorld {
         this.worldOffsetX = 0;
         this.segmentCoinCount = new HashMap<>();
         this.segmentMushroomCount = new HashMap<>();
-
+        this.font = font;
         generateInitialCoins();
         generateInitialMushrooms();
     }
@@ -68,10 +69,12 @@ public class GameWorld {
         }
 
         // Draw score
+        float fontSize = 26;
+        font = font.deriveFont(fontSize);
+        g.setFont(font);
         g.setColor(Color.BLACK);
-        g.setFont(new Font("Arial", Font.BOLD, 32));
         g.drawString("Score: " + score, 550, 50);
-        g.drawImage(coinSprites[0], 515, 22, 32, 32, null);
+        g.drawImage(coinSprites[0], 515, 20, 32, 32, null);
     }
 
     private void generateInitialCoins() {

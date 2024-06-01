@@ -1,8 +1,9 @@
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+
+import static java.awt.Font.TRUETYPE_FONT;
 
 public class Platformer extends GameEngine {
     private GameWorld gameWorld;
@@ -15,7 +16,14 @@ public class Platformer extends GameEngine {
     private AudioClip collectCoinSound;
     private AudioClip hurtSound;
     private boolean gameWon = false;
-    private JButton restartButton;
+    private Menu menu;
+    private enum GameState {Menu, Play}
+    private int menuOption;
+    private boolean instructions;
+    GameState gamestate = GameState.Menu;
+    Font font;
+    File file;
+
 
     public static void main(String[] args) {
         createGame(new Platformer(), 60);
@@ -61,8 +69,11 @@ public class Platformer extends GameEngine {
                 }
             }
         }
+        //tai
+        loadGameFont();
+        menu = new Menu(background, font);
 
-        gameWorld = new GameWorld(this, player, coinSprites, mushroomSprite, background);
+        gameWorld = new GameWorld(this, player, coinSprites, mushroomSprite, background, font);
 
         // load sound effects
         bgm = loadAudio("./resource/sounds/bgm.wav");
@@ -70,56 +81,64 @@ public class Platformer extends GameEngine {
         jumpSound = loadAudio("./resource/sounds/Jump.wav");
         collectCoinSound = loadAudio("./resource/sounds/collectcoin.wav");
         hurtSound = loadAudio("./resource/sounds/hurt.wav");
-        SwingUtilities.invokeLater(() -> {
-            restartButton = new JButton("Restart");
-            restartButton.setFont(new Font("Arial", Font.BOLD, 32));
-            restartButton.setBounds(300, 350, 200, 50);
-            restartButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    restartGame();
-                }
-            });
-            mFrame.getContentPane().setLayout(null);
-            mFrame.getContentPane().add(restartButton);
-            restartButton.setVisible(false);
-        });
     }
 
     @Override
     public void update(double dt) {
-        if (!gameWon) {
+        //tai
+        if (gamestate == GameState.Menu) {
+            menu.update(menuOption);
+            menu.setInstructions(instructions);
+        }
+        else if (gamestate == GameState.Play) {
             gameWorld.update(dt);
         }
     }
 
     @Override
     public void paintComponent() {
-        if (gameWon) {
-            // draw the background
-            for (int i = 0; i < GameConfig.WINDOW_WIDTH; i += background.getWidth(null)) {
-                for (int j = 0; j < GameConfig.WINDOW_HEIGHT; j += background.getHeight(null)) {
-                    mGraphics.drawImage(background, i, j, null);
+        //tai
+        if (gamestate == GameState.Menu) {
+            menu.draw(mGraphics);
+        }
+        else {
+            if (gameWon) {
+                // draw the background
+                for (int i = 0; i < GameConfig.WINDOW_WIDTH; i += background.getWidth(null)) {
+                    for (int j = 0; j < GameConfig.WINDOW_HEIGHT; j += background.getHeight(null)) {
+                        mGraphics.drawImage(background, i, j, null);
+                    }
                 }
-            }
-
-            // draw winning screen
-            mGraphics.setColor(Color.WHITE);
-            mGraphics.setFont(new Font("Arial", Font.BOLD, 64));
-            mGraphics.drawString("You Won!!!", 250, 300);
-            if (restartButton != null) {
-                restartButton.setVisible(true);
-            }
-        } else {
-            gameWorld.draw(mGraphics);
-            if (restartButton != null) {
-                restartButton.setVisible(false);
+                // draw winning screen
+                mGraphics.setColor(Color.WHITE);
+                float fontSize = 40;
+                font = font.deriveFont(fontSize);
+                mGraphics.setFont(font);
+                mGraphics.drawString("You Won!!!", 200, 300);
+                fontSize = 20;
+                font = font.deriveFont(fontSize);
+                mGraphics.setFont(font);
+                mGraphics.drawString("Final score: " + gameWorld.getScore(), 250, 330);
+                mGraphics.drawString("Press Enter to restart, or Esc to exit", 20, 550);
+            } else {
+                gameWorld.draw(mGraphics);
             }
         }
     }
 
+    //tai
     @Override
     public void keyPressed(KeyEvent e) {
+        if (gamestate == GameState.Menu){
+            keyPressedMenu(e);
+        }
+        else if (gamestate == GameState.Play) {
+            keyPressedPlay(e);
+        }
+    }
+
+    //tai
+    public void keyPressedPlay(KeyEvent e) {
         if (!gameWon) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_LEFT -> player.setLeft(true);
@@ -130,11 +149,43 @@ public class Platformer extends GameEngine {
                 }
             }
         }
+        else {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {restartGame();}
+            if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {System.exit(0);}
+        }
+    }
+
+    //tai
+    public void keyPressedMenu(KeyEvent e) {
+        if (!instructions) {
+            if (e.getKeyCode() == KeyEvent.VK_UP) {
+                if (menuOption > 0) {
+                    menuOption--;
+                }
+            }
+            if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                if (menuOption < 2) {
+                    menuOption++;
+                }
+            }
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                if (menuOption == 0) {
+                    gamestate = GameState.Play;
+                } else if (menuOption == 1) {
+                    instructions = true;
+                } else if (menuOption == 2) {
+                    System.exit(0);
+                }
+            }
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_ESCAPE && instructions) {
+            instructions = false;
+        }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (!gameWon) {
+        if (!gameWon && gamestate == GameState.Play) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_LEFT -> player.setLeft(false);
                 case KeyEvent.VK_RIGHT -> player.setRight(false);
@@ -153,18 +204,27 @@ public class Platformer extends GameEngine {
 
     public void showWinningScreen() {
         gameWon = true;
-        if (restartButton != null) {
-            restartButton.setVisible(true);
-        }
     }
 
     private void restartGame() {
         // Restart the game logic
         gameWon = false;
-        if (restartButton != null) {
-            restartButton.setVisible(false);
-        }
         player = new Player(player.getIdleSprites(), player.getWalkingSprites());
-        gameWorld = new GameWorld(this, player, coinSprites, mushroomSprite, background);
+        gameWorld = new GameWorld(this, player, coinSprites, mushroomSprite, background, font);
+    }
+
+    public void loadGameFont() {
+        //loads in custom font prstart.ttf
+        try {
+            file = new File("./resource/prstart.ttf");
+            font = Font.createFont(TRUETYPE_FONT, file);
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            ge.registerFont(font);
+            float fontSize = 40;
+            font = font.deriveFont(fontSize);
+            mGraphics.setFont(font);
+        } catch (FontFormatException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
