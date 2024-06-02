@@ -65,23 +65,17 @@ public class GameWorld {
             g.drawImage(background, i * GameConfig.WINDOW_WIDTH - (int) worldOffsetX, 0, GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT, null);
         }
 
-        //Draw tilemap
+        //Draw objects
         tilemap.drawTileMap(g, worldOffsetX);
-
-        // Draw player
         player.draw(g, worldOffsetX);
-
-        // Draw coins
         for (Coin coin : coins) {
             coin.draw(g, worldOffsetX);
         }
-
-        // Draw mushrooms
         for (Mushroom mushroom : mushrooms) {
             mushroom.draw(g, worldOffsetX);
         }
 
-        // Draw score
+        // Draw score board
         float fontSize = 26;
         font = font.deriveFont(fontSize);
         g.setFont(font);
@@ -164,7 +158,7 @@ public class GameWorld {
                     }
                 }
 
-                //Check for overlaps with existing coins
+                //Check for overlaps with existing tiles
                 for (Tile tile :tilemap.platformTiles) {
                     if (tile.getBounds(0).intersects(new Rectangle((int) x, (int) y, Coin.SIZE, Coin.SIZE))) {
                         overlaps = true;
@@ -234,13 +228,9 @@ public class GameWorld {
         if (intersectingTiles.isEmpty() && !onTile) {
             player.setOnTile(false);
         }
-
         for (Tile tile : getCollidingTiles()) {
-
             Rectangle intersection = player.getBounds(worldOffsetX).intersection(tile.getBounds(worldOffsetX));
-
             if (player.getX() + GameConfig.SPRITE_SIZE > tile.getX() || player.getX() < tile.getX() + GameConfig.TILE_SIZE) {
-
                 if (player.getY() + GameConfig.SPRITE_SIZE - 5 < tile.getY() && player.getY() + GameConfig.SPRITE_SIZE - 15 > tile.getY()) {
                     player.setOnTile(true);
                 }
@@ -248,17 +238,13 @@ public class GameWorld {
             else {
                 player.setOnTile(false);
             }
-
-
             if (intersection.width < 15 && intersection.height < 15) {
                 break;
             }
 
-
             if (intersection.width >= intersection.height) {
                 if (player.getYVelocity() < 0) {
                     upCheck(tile);
-
                 }
                 if (player.getYVelocity() >= 0) {
                     downCheck(tile);
@@ -268,16 +254,13 @@ public class GameWorld {
             else {
                 if (player.getLeft()) {
                     leftCheck(tile);
-
                 }
                 else if (player.getRight()) {
                     rightCheck(tile);
 
                 }
-
             }
         }
-
         intersectingTiles.clear();
     }
 
@@ -294,6 +277,7 @@ public class GameWorld {
         player.setY(newY);
         player.setYVelocity(0);
     }
+
     private void leftCheck(Tile tile) {
         float newX = (float) (tile.getX() + GameConfig.TILE_SIZE);
         player.setX(newX);
@@ -309,7 +293,6 @@ public class GameWorld {
         if (playerScreenX > GameConfig.WINDOW_WIDTH / 2) {
             worldOffsetX = player.getX() - GameConfig.WINDOW_WIDTH / 2;
         }
-
     }
 
     private void checkBoundaryCollisions() {

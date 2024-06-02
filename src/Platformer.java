@@ -81,7 +81,7 @@ public class Platformer extends GameEngine {
                 }
             }
         }
-        //tai
+
         loadGameFont();
         menu = new Menu(background, font);
 
@@ -97,7 +97,7 @@ public class Platformer extends GameEngine {
 
     @Override
     public void update(double dt) {
-        //tai
+
         if (gamestate == GameState.Menu) {
             menu.update(menuOption);
             menu.setInstructions(instructions);
@@ -109,7 +109,7 @@ public class Platformer extends GameEngine {
 
     @Override
     public void paintComponent() {
-        //tai
+
         if (gamestate == GameState.Menu) {
             menu.draw(mGraphics);
         }
@@ -154,7 +154,6 @@ public class Platformer extends GameEngine {
         }
     }
 
-    //tai
     @Override
     public void keyPressed(KeyEvent e) {
         if (gamestate == GameState.Menu){
@@ -165,7 +164,6 @@ public class Platformer extends GameEngine {
         }
     }
 
-    //tai
     public void keyPressedPlay(KeyEvent e) {
         if (!gameWon && !gameLost) {
             switch (e.getKeyCode()) {
@@ -183,7 +181,6 @@ public class Platformer extends GameEngine {
         }
     }
 
-    //tai
     public void keyPressedMenu(KeyEvent e) {
         if (!instructions) {
             if (e.getKeyCode() == KeyEvent.VK_UP) {

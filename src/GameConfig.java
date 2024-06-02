@@ -13,5 +13,4 @@ public class GameConfig {
     public static final int MUSHROOMS_TOTAL = (WORLD_WIDTH / SEGMENT_WIDTH) * MAX_MUSHROOMS_PER_SEGMENT;
     public static final int WINNING_SCORE = 20; // Score needed to win the game
     public static final int TILE_SIZE = 50;
-
 }
