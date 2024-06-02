@@ -89,17 +89,17 @@ public abstract class GameEngine implements KeyListener, MouseListener, MouseMot
                     @Override
                     public boolean dispatchKeyEvent(KeyEvent e) {
                         switch (e.getID()) {
-                        case KeyEvent.KEY_PRESSED:
-                            GameEngine.this.keyPressed(e);
-                            return false;
-                        case KeyEvent.KEY_RELEASED:
-                            GameEngine.this.keyReleased(e);
-                            return false;
-                        case KeyEvent.KEY_TYPED:
-                            GameEngine.this.keyTyped(e);
-                            return false;
-                        default:
-                            return false; // do not consume the event
+                            case KeyEvent.KEY_PRESSED:
+                                GameEngine.this.keyPressed(e);
+                                return false;
+                            case KeyEvent.KEY_RELEASED:
+                                GameEngine.this.keyReleased(e);
+                                return false;
+                            case KeyEvent.KEY_TYPED:
+                                GameEngine.this.keyTyped(e);
+                                return false;
+                            default:
+                                return false; // do not consume the event
                         }
                     }
                 });
